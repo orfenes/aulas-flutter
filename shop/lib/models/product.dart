@@ -1,4 +1,9 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+
+import '../providers/constants.dart';
 
 class Product with ChangeNotifier {
   final String id;
@@ -17,8 +22,21 @@ class Product with ChangeNotifier {
     this.isFavorite = false,
   });
 
-  void toggleFavorite() {
+  void _toggleFavorite() {
     isFavorite = !isFavorite;
     notifyListeners();
+  }
+
+  Future<void> toggleFavorite(String token, String userId) async {
+    _toggleFavorite();
+
+    final reponse = await http.put(
+      Uri.parse('${Constants.USE_FAVORITES_URL}/$userId/$id.json?auth=$token'),
+      body: jsonEncode(isFavorite),
+    );
+
+    if (reponse.statusCode >= 400) {
+      _toggleFavorite();
+    }
   }
 }
